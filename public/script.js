@@ -318,7 +318,10 @@ function shuffle(arr) {
 }
 
 function normalize(str) {
-  return str.trim().toLowerCase().replace(/[.,!?;:'"]/g, '').replace(/\s+/g, ' ');
+  return str.trim().toLowerCase()
+    .replace(/[.,!?;:'"]/g, ' ')  // 구두점을 제거 대신 공백으로
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function escapeAttr(str) {
@@ -456,6 +459,18 @@ function paraNavHTML(stepNum) {
         ${isLast ? '✓ 이 단계 완료' : '다음 문단 →'}
       </button>
     </div>`;
+}
+
+function setBlankRatio(ratio) {
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+  paraSents.forEach((s, i) => {
+    const globalIdx = offset + i;
+    const words = s.split(/\s+/);
+    const n = ratio >= 1 ? words.length : Math.max(1, Math.round(words.length * ratio));
+    blankMap[globalIdx] = shuffle([...Array(words.length).keys()]).slice(0, n);
+  });
+  buildStep4();  // 통계 초기화 후 재렌더
 }
 
 function nextPara(stepNum) {
@@ -756,6 +771,10 @@ function renderStep4Para() {
   const area = document.getElementById('blankTypeArea');
   area.innerHTML =
     paraNavHTML(4) +
+    `<div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn-secondary sm" onclick="setBlankRatio(0.35)">일부 빈칸</button>
+      <button class="btn-secondary sm" onclick="setBlankRatio(1)">전체 빈칸</button>
+    </div>` +
     paraSents.map((s, i) => {
       const globalIdx = offset + i;
       const words = s.split(/\s+/);
@@ -783,17 +802,18 @@ function checkBlankType(si, wi) {
   const user = normalize(input.value);
   const correct = normalize(answer);
   if (!user) return;
-  input.disabled = true;
+
   if (user === correct) {
+    input.disabled = true;          // 맞으면 잠금
+    input.classList.remove('wrong');
     input.classList.add('correct');
     blankTypeStats.correct++;
+    updateBlankTypeStats();
   } else {
-    input.classList.add('wrong');
+    input.classList.remove('correct');
+    input.classList.add('wrong');   // 틀려도 잠금 안 함 → 재입력 가능
     input.title = `정답: ${answer}`;
-    blankTypeStats.wrong++;
-    addWrongSentence(si);
   }
-  updateBlankTypeStats();
 }
 
 function updateBlankTypeStats() {
