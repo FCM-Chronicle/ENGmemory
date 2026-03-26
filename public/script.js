@@ -30,6 +30,10 @@ let allPassages = [];
 let currentPassage = null;
 let paragraphs = [];
 let sentences = [];
+let meanings = [];
+let hasMeaning = false;
+let hasTyping = false;
+let hasRecall = false;
 let currentStep = 0;
 let currentParaIdx = 0;
 let readClicked = new Set();
@@ -40,6 +44,12 @@ let paraOrderItemsMap = {};
 let typeStats = { correct: 0, wrong: 0 };
 let blankTypeStats = { correct: 0, wrong: 0 };
 let recallStats = { ok: 0, no: 0 };
+let wordArrangeStats = { correct: 0, wrong: 0 };
+let meaningTypeStats = { correct: 0, wrong: 0 };
+let wordArrangeParaSentIdx = 0;
+let meaningTypeParaSentIdx = 0;
+let wordArrangeSelected = [];
+let wordArrangeShuffled = [];
 let homeTab = 'all';
 let paraInputCount = 0;
 let deleteUnlocked = false;
@@ -131,6 +141,7 @@ function renderPassageList(passages) {
     const badge = progress ? `<div class="progress-badge">${progress.currentStep + 1}단계</div>` : '';
     const fav = isFav(p.id) ? `<div class="fav-badge">⭐</div>` : '';
     const tags = (p.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+    const meaningBadge = p.hasMeaning ? `<span class="tag" style="border-color:var(--accent);color:var(--accent)">뜻포함</span>` : '';
     return `
       <div class="passage-card" onclick="startStudy('${p.id}')">
         ${badge}${fav}
@@ -140,7 +151,7 @@ function renderPassageList(passages) {
           <span>${formatDate(p.createdAt)}</span>
           <span>${(p.paragraphs || []).length}문단</span>
         </div>
-        ${tags ? `<div class="tags">${tags}</div>` : ''}
+        <div class="tags">${meaningBadge}${tags}</div>
         <div class="card-actions" onclick="event.stopPropagation()">
           <button class="btn-delete" onclick="deletePassage('${p.id}')">삭제</button>
         </div>
@@ -188,6 +199,14 @@ function updateFavBtn() {
 }
 
 // ══════════════════════════════════════
+//  업로드 옵션 토글
+// ══════════════════════════════════════
+function toggleMeaningMode() {
+  const on = document.getElementById('meaningToggle').checked;
+  document.getElementById('meaningHint').style.display = on ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════
 //  문단 입력 UI
 // ══════════════════════════════════════
 function addPara() {
@@ -230,18 +249,27 @@ async function uploadPassage() {
   const author = document.getElementById('upAuthor').value.trim();
   const tagsRaw = document.getElementById('upTags').value.trim();
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const withMeaning = document.getElementById('meaningToggle').checked;
+  const withTyping = document.getElementById('typingToggle').checked;
+  const withRecall = document.getElementById('recallToggle').checked;
 
   const paraTexts = [...document.querySelectorAll('.para-textarea')]
     .map(t => t.value.trim()).filter(Boolean);
 
   if (!title || !paraTexts.length) { showToast('제목과 문단은 필수예요!'); return; }
 
-  const parasData = paraTexts.map(text => parseSentences(text));
+  const parasData = paraTexts.map(text => parseParaWithMeaning(text, withMeaning));
 
   try {
     await apiFetch('/api/passages', {
       method: 'POST',
-      body: JSON.stringify({ title, author, tags, paragraphs: parasData }),
+      body: JSON.stringify({
+        title, author, tags,
+        paragraphs: parasData,
+        hasMeaning: withMeaning,
+        hasTyping: withTyping,
+        hasRecall: withRecall,
+      }),
     });
     showToast('지문이 공유되었어요!');
     document.getElementById('upTitle').value = '';
@@ -258,61 +286,23 @@ async function uploadPassage() {
 }
 
 // ══════════════════════════════════════
-//  학습 시작
+//  파싱 유틸
 // ══════════════════════════════════════
-function startStudy(id) {
-  currentPassage = allPassages.find(p => p.id === id);
-  if (!currentPassage) return;
-
-  if (currentPassage.paragraphs && currentPassage.paragraphs.length) {
-    paragraphs = currentPassage.paragraphs;
-  } else if (currentPassage.content) {
-    paragraphs = [parseSentences(currentPassage.content)];
+function parseParaWithMeaning(text, withMeaning) {
+  if (!withMeaning) {
+    return { sentences: parseSentences(text), meanings: null };
   }
-  sentences = paragraphs.flat();
-
-  document.getElementById('studyTitle').textContent = currentPassage.title;
-  typeStats = { correct: 0, wrong: 0 };
-  blankTypeStats = { correct: 0, wrong: 0 };
-  recallStats = { ok: 0, no: 0 };
-  readClicked = new Set();
-
-  updateFavBtn();
-  buildStep0();
-  buildStep3();
-  buildStep4();
-  buildStep5();
-  buildStep6();
-
-  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active', 'done'));
-  document.querySelector('.step-tab[data-step="0"]').classList.add('active');
-  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('step-0').classList.add('active');
-  currentStep = 0;
-
-  showPage('page-study');
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const sentList = [];
+  const meanList = [];
+  for (let i = 0; i < lines.length; i += 2) {
+    const eng = lines[i];
+    const kor = lines[i + 1] || '';
+    if (eng) { sentList.push(eng); meanList.push(kor); }
+  }
+  return { sentences: sentList, meanings: meanList };
 }
 
-// ══════════════════════════════════════
-//  단계 이동
-// ══════════════════════════════════════
-function goStep(n) {
-  if (n === 1) buildParaOrder();
-  if (n === 2) buildOrder();
-  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('step-' + n).classList.add('active');
-  document.querySelectorAll('.step-tab').forEach((t, i) => {
-    t.classList.remove('active', 'done');
-    if (i < n) t.classList.add('done');
-  });
-  document.querySelector(`.step-tab[data-step="${n}"]`).classList.add('active');
-  currentStep = n;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ══════════════════════════════════════
-//  유틸
-// ══════════════════════════════════════
 function parseSentences(text) {
   const sents = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sents.map(s => s.trim()).filter(s => s.length > 3);
@@ -331,19 +321,125 @@ function normalize(str) {
   return str.trim().toLowerCase().replace(/[.,!?;:'"]/g, '').replace(/\s+/g, ' ');
 }
 
-// ══════════════════════════════════════
-//  문단별 진행 공통 유틸
-// ══════════════════════════════════════
-function resetParaIdx() {
-  currentParaIdx = 0;
+function escapeAttr(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
+// ══════════════════════════════════════
+//  학습 시작
+// ══════════════════════════════════════
+function startStudy(id) {
+  currentPassage = allPassages.find(p => p.id === id);
+  if (!currentPassage) return;
+
+  hasMeaning = !!currentPassage.hasMeaning;
+  hasTyping = currentPassage.hasTyping !== false;
+  hasRecall = currentPassage.hasRecall !== false;
+
+  if (currentPassage.paragraphs && currentPassage.paragraphs.length) {
+    paragraphs = currentPassage.paragraphs;
+  } else if (currentPassage.content) {
+    paragraphs = [{ sentences: parseSentences(currentPassage.content), meanings: null }];
+  }
+
+  sentences = paragraphs.flatMap(p => p.sentences || p);
+  meanings = hasMeaning
+    ? paragraphs.flatMap(p => p.meanings || (p.sentences || p).map(() => null))
+    : sentences.map(() => null);
+
+  document.getElementById('studyTitle').textContent = currentPassage.title;
+  typeStats = { correct: 0, wrong: 0 };
+  blankTypeStats = { correct: 0, wrong: 0 };
+  recallStats = { ok: 0, no: 0 };
+  wordArrangeStats = { correct: 0, wrong: 0 };
+  meaningTypeStats = { correct: 0, wrong: 0 };
+  readClicked = new Set();
+
+  updateFavBtn();
+  updateStepTabs();
+
+  buildStep0();
+  buildStep3();
+  buildStep4();
+  if (hasMeaning) { buildStep5(); buildStep6(); }
+  if (hasTyping) buildStep7();
+  if (hasRecall) buildStep8();
+
+  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active', 'done'));
+  document.querySelector('.step-tab[data-step="0"]').classList.add('active');
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('step-0').classList.add('active');
+  currentStep = 0;
+
+  showPage('page-study');
+}
+
+// ══════════════════════════════════════
+//  스텝 탭 상태 업데이트
+// ══════════════════════════════════════
+function updateStepTabs() {
+  ['5', '6'].forEach(n => {
+    const tab = document.querySelector(`.step-tab[data-step="${n}"]`);
+    if (!tab) return;
+    if (!hasMeaning) {
+      tab.classList.add('disabled');
+      tab.setAttribute('title', '뜻 포함 지문에서만 사용 가능');
+    } else {
+      tab.classList.remove('disabled');
+      tab.removeAttribute('title');
+    }
+  });
+  const tab7 = document.querySelector('.step-tab[data-step="7"]');
+  if (tab7) {
+    if (!hasTyping) { tab7.classList.add('disabled'); tab7.setAttribute('title', '업로드 시 미선택'); }
+    else { tab7.classList.remove('disabled'); tab7.removeAttribute('title'); }
+  }
+  const tab8 = document.querySelector('.step-tab[data-step="8"]');
+  if (tab8) {
+    if (!hasRecall) { tab8.classList.add('disabled'); tab8.setAttribute('title', '업로드 시 미선택'); }
+    else { tab8.classList.remove('disabled'); tab8.removeAttribute('title'); }
+  }
+}
+
+// ══════════════════════════════════════
+//  단계 이동
+// ══════════════════════════════════════
+function goStep(n) {
+  const tab = document.querySelector(`.step-tab[data-step="${n}"]`);
+  if (tab && tab.classList.contains('disabled')) {
+    showToast('이 단계는 사용할 수 없어요');
+    return;
+  }
+  if (n === 1) buildParaOrder();
+  if (n === 2) buildOrder();
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active', 'done');
+    if (i < n) t.classList.add('done');
+  });
+  document.querySelector(`.step-tab[data-step="${n}"]`).classList.add('active');
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════
+//  문단별 공통 유틸
+// ══════════════════════════════════════
+function resetParaIdx() { currentParaIdx = 0; }
+
 function getParaOffset(paraIdx) {
-  return paragraphs.slice(0, paraIdx).reduce((acc, p) => acc + p.length, 0);
+  return paragraphs.slice(0, paraIdx).reduce((acc, p) => acc + (p.sentences || p).length, 0);
 }
 
 function getCurrentParaSentences() {
-  return paragraphs[currentParaIdx] || [];
+  const p = paragraphs[currentParaIdx];
+  return p ? (p.sentences || p) : [];
+}
+
+function getCurrentParaMeanings() {
+  const p = paragraphs[currentParaIdx];
+  return (p && p.meanings) ? p.meanings : [];
 }
 
 function paraNavHTML(stepNum) {
@@ -372,18 +468,27 @@ function nextPara(stepNum) {
       case 4: renderStep4Para(); break;
       case 5: renderStep5Para(); break;
       case 6: renderStep6Para(); break;
+      case 7: renderStep7Para(); break;
+      case 8: renderStep8Para(); break;
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
     showToast('🎉 모든 문단 완료!');
-    if (stepNum < 6) {
-      if (confirm('이 단계를 완료했어요! 다음 단계로 넘어갈까요?')) {
-        goStep(stepNum + 1);
-      }
+    const nextStep = getNextActiveStep(stepNum);
+    if (nextStep !== null) {
+      if (confirm('이 단계를 완료했어요! 다음 단계로 넘어갈까요?')) goStep(nextStep);
     } else {
       finishStudy();
     }
   }
+}
+
+function getNextActiveStep(current) {
+  for (let n = current + 1; n <= 8; n++) {
+    const tab = document.querySelector(`.step-tab[data-step="${n}"]`);
+    if (tab && !tab.classList.contains('disabled')) return n;
+  }
+  return null;
 }
 
 // ══════════════════════════════════════
@@ -397,17 +502,18 @@ function buildStep0() {
 
 function renderStep0Para() {
   const paraSents = getCurrentParaSentences();
+  const paraMeans = getCurrentParaMeanings();
   const offset = getParaOffset(currentParaIdx);
-
   const area = document.getElementById('readArea');
   area.innerHTML =
     paraNavHTML(0) +
     paraSents.map((s, i) => {
       const globalIdx = offset + i;
+      const meaning = paraMeans[i] ? `<div class="read-meaning">${paraMeans[i]}</div>` : '';
       return `
         <div class="read-sentence" id="rs${globalIdx}" onclick="clickSentence(${globalIdx})">
           <span class="snum">${globalIdx + 1}</span>
-          <span>${s}</span>
+          <div><span>${s}</span>${meaning}</div>
         </div>`;
     }).join('');
   document.getElementById('readProgress').style.width = '0%';
@@ -427,7 +533,10 @@ function clickSentence(i) {
 //  STEP 1: 문단 순서
 // ══════════════════════════════════════
 function buildParaOrder() {
-  paraOrderItems = shuffle(paragraphs.map((para, i) => ({ para, origIdx: i })));
+  paraOrderItems = shuffle(paragraphs.map((para, i) => ({
+    para: para.sentences || para,
+    origIdx: i
+  })));
   renderParaOrderArea();
 }
 
@@ -478,14 +587,12 @@ function buildOrder() {
 
 function renderStep2Para() {
   const paraSents = getCurrentParaSentences();
-
   if (!paraOrderItemsMap[currentParaIdx]) {
     paraOrderItemsMap[currentParaIdx] = shuffle(
       paraSents.map((s, i) => ({ s, origIdx: i }))
     );
   }
   orderItems = paraOrderItemsMap[currentParaIdx];
-
   const area = document.getElementById('orderArea');
   area.innerHTML =
     paraNavHTML(2) +
@@ -531,17 +638,14 @@ function startDrag(e, type, idx) {
   dragType = type;
   dragIdx = idx;
   dragEl = e.currentTarget.closest('.order-card');
-
   const rect = dragEl.getBoundingClientRect();
   const clientY = e.touches ? e.touches[0].clientY : e.clientY;
   dragOffY = clientY - rect.top;
-
   dragClone = dragEl.cloneNode(true);
   dragClone.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;opacity:.85;pointer-events:none;z-index:999;border-color:var(--accent);`;
   dragClone.style.top = (clientY - dragOffY) + 'px';
   document.body.appendChild(dragClone);
   dragEl.style.opacity = '0.3';
-
   document.addEventListener('mousemove', onDragMove);
   document.addEventListener('touchmove', onDragMove, { passive: false });
   document.addEventListener('mouseup', onDragEnd);
@@ -559,11 +663,9 @@ function onDragEnd(e) {
   document.removeEventListener('touchmove', onDragMove);
   document.removeEventListener('mouseup', onDragEnd);
   document.removeEventListener('touchend', onDragEnd);
-
   const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
   dragClone.remove();
   dragEl.style.opacity = '';
-
   const area = document.getElementById(dragType === 'para' ? 'paraOrderArea' : 'orderArea');
   const cards = [...area.querySelectorAll('.order-card')];
   let targetIdx = null;
@@ -571,7 +673,6 @@ function onDragEnd(e) {
     const rect = card.getBoundingClientRect();
     if (clientY >= rect.top && clientY <= rect.bottom) targetIdx = i;
   });
-
   if (targetIdx !== null && targetIdx !== dragIdx) {
     if (dragType === 'para') {
       const tmp = paraOrderItems[dragIdx];
@@ -606,7 +707,6 @@ function buildStep3() {
 function renderStep3Para() {
   const paraSents = getCurrentParaSentences();
   const offset = getParaOffset(currentParaIdx);
-
   const area = document.getElementById('blankArea');
   area.innerHTML =
     paraNavHTML(3) +
@@ -625,18 +725,9 @@ function renderStep3Para() {
     }).join('');
 }
 
-function toggleBlank(si, wi) {
-  document.getElementById(`bw${si}_${wi}`).classList.toggle('revealed');
-}
-
-function revealAllBlanks() {
-  document.querySelectorAll('.blank-word').forEach(el => el.classList.add('revealed'));
-}
-
-function hideAllBlanks() {
-  document.querySelectorAll('.blank-word').forEach(el => el.classList.remove('revealed'));
-}
-
+function toggleBlank(si, wi) { document.getElementById(`bw${si}_${wi}`).classList.toggle('revealed'); }
+function revealAllBlanks() { document.querySelectorAll('.blank-word').forEach(el => el.classList.add('revealed')); }
+function hideAllBlanks() { document.querySelectorAll('.blank-word').forEach(el => el.classList.remove('revealed')); }
 function reshuffleBlanks() {
   const paraSents = getCurrentParaSentences();
   const offset = getParaOffset(currentParaIdx);
@@ -662,7 +753,6 @@ function buildStep4() {
 function renderStep4Para() {
   const paraSents = getCurrentParaSentences();
   const offset = getParaOffset(currentParaIdx);
-
   const area = document.getElementById('blankTypeArea');
   area.innerHTML =
     paraNavHTML(4) +
@@ -712,22 +802,220 @@ function updateBlankTypeStats() {
 }
 
 // ══════════════════════════════════════
-//  STEP 5: 문장 타이핑 (문단별)
+//  STEP 5: 뜻보고 단어 배열 (문단별, 한 화면에 하나)
 // ══════════════════════════════════════
 function buildStep5() {
-  typeStats = { correct: 0, wrong: 0 };
-  updateTypeStats();
+  wordArrangeStats = { correct: 0, wrong: 0 };
   resetParaIdx();
-  renderStep5Para();
+  wordArrangeParaSentIdx = 0;
+  renderStep5Card();
 }
 
 function renderStep5Para() {
+  wordArrangeParaSentIdx = 0;
+  renderStep5Card();
+}
+
+function renderStep5Card() {
+  const paraSents = getCurrentParaSentences();
+  const paraMeans = getCurrentParaMeanings();
+  const offset = getParaOffset(currentParaIdx);
+  const total = paraSents.length;
+  const i = wordArrangeParaSentIdx;
+  if (i >= total) { nextPara(5); return; }
+
+  const globalIdx = offset + i;
+  const meaning = paraMeans[i] || '';
+  const words = sentences[globalIdx].replace(/[.,!?;:]/g, '').split(/\s+/).filter(Boolean);
+  wordArrangeShuffled = shuffle(words.map((w, j) => ({ w, id: j })));
+  wordArrangeSelected = [];
+
+  const dotsHTML = paragraphs.map((_, pi) =>
+    `<span class="para-dot ${pi < currentParaIdx ? 'done' : pi === currentParaIdx ? 'active' : ''}">${pi + 1}</span>`
+  ).join('');
+
+  const area = document.getElementById('wordArrangeArea');
+  area.innerHTML = `
+    <div class="para-nav">
+      <div class="para-dots">${dotsHTML}</div>
+      <div class="para-nav-label">문단 ${currentParaIdx + 1} / ${paragraphs.length}</div>
+    </div>
+    <div class="word-arrange-progress">${i + 1} / ${total}</div>
+    <div class="word-arrange-meaning">${meaning}</div>
+    <div class="word-arrange-answer-area" id="waAnswer"></div>
+    <div class="word-arrange-words" id="waWords">
+      ${wordArrangeShuffled.map(item =>
+        `<button class="word-card" id="wc${item.id}" onclick="selectWord(${item.id}, '${escapeAttr(item.w)}')">${item.w}</button>`
+      ).join('')}
+    </div>
+    <div class="word-arrange-actions">
+      <button class="btn-secondary sm" onclick="resetWordArrange()">↺ 초기화</button>
+      <button class="btn-accent" onclick="checkWordArrange(${globalIdx})">확인</button>
+    </div>
+    <div class="type-feedback" id="waFeedback" style="display:none"></div>`;
+}
+
+function selectWord(id, word) {
+  const btn = document.getElementById('wc' + id);
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.classList.add('used');
+  wordArrangeSelected.push({ id, word });
+  renderAnswerArea();
+}
+
+function renderAnswerArea() {
+  const area = document.getElementById('waAnswer');
+  if (!area) return;
+  area.innerHTML = wordArrangeSelected.map((item, i) =>
+    `<span class="answer-word" onclick="deselectWord(${i})">${item.word}</span>`
+  ).join('');
+}
+
+function deselectWord(idx) {
+  const item = wordArrangeSelected[idx];
+  wordArrangeSelected.splice(idx, 1);
+  const btn = document.getElementById('wc' + item.id);
+  if (btn) { btn.disabled = false; btn.classList.remove('used'); }
+  renderAnswerArea();
+}
+
+function resetWordArrange() {
+  wordArrangeSelected = [];
+  wordArrangeShuffled.forEach(item => {
+    const btn = document.getElementById('wc' + item.id);
+    if (btn) { btn.disabled = false; btn.classList.remove('used'); }
+  });
+  renderAnswerArea();
+}
+
+function checkWordArrange(globalIdx) {
+  const fb = document.getElementById('waFeedback');
+  const userSentence = wordArrangeSelected.map(i => i.word).join(' ');
+  const correct = sentences[globalIdx].replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ').trim();
+  fb.style.display = 'block';
+  if (normalize(userSentence) === normalize(correct)) {
+    fb.className = 'type-feedback correct';
+    fb.textContent = '✓ 정답!';
+    wordArrangeStats.correct++;
+    setTimeout(() => goNextWordArrange(), 800);
+  } else {
+    fb.className = 'type-feedback wrong';
+    fb.innerHTML = `✗ 정답: <span style="color:var(--text)">${sentences[globalIdx]}</span>`;
+    wordArrangeStats.wrong++;
+    addWrongSentence(globalIdx);
+  }
+}
+
+function goNextWordArrange() {
+  wordArrangeParaSentIdx++;
+  if (wordArrangeParaSentIdx >= getCurrentParaSentences().length) {
+    nextPara(5);
+  } else {
+    renderStep5Card();
+  }
+}
+
+// ══════════════════════════════════════
+//  STEP 6: 뜻보고 문장 타이핑 (문단별, 한 화면에 하나)
+// ══════════════════════════════════════
+function buildStep6() {
+  meaningTypeStats = { correct: 0, wrong: 0 };
+  resetParaIdx();
+  meaningTypeParaSentIdx = 0;
+  renderStep6Card();
+}
+
+function renderStep6Para() {
+  meaningTypeParaSentIdx = 0;
+  renderStep6Card();
+}
+
+function renderStep6Card() {
+  const paraSents = getCurrentParaSentences();
+  const paraMeans = getCurrentParaMeanings();
+  const offset = getParaOffset(currentParaIdx);
+  const total = paraSents.length;
+  const i = meaningTypeParaSentIdx;
+  if (i >= total) { nextPara(6); return; }
+
+  const globalIdx = offset + i;
+  const meaning = paraMeans[i] || '';
+
+  const dotsHTML = paragraphs.map((_, pi) =>
+    `<span class="para-dot ${pi < currentParaIdx ? 'done' : pi === currentParaIdx ? 'active' : ''}">${pi + 1}</span>`
+  ).join('');
+
+  const area = document.getElementById('meaningTypeArea');
+  area.innerHTML = `
+    <div class="para-nav">
+      <div class="para-dots">${dotsHTML}</div>
+      <div class="para-nav-label">문단 ${currentParaIdx + 1} / ${paragraphs.length}</div>
+    </div>
+    <div class="word-arrange-progress">${i + 1} / ${total}</div>
+    <div class="word-arrange-meaning">${meaning}</div>
+    <input class="type-input" id="mti${globalIdx}" placeholder="영어 문장을 입력하세요..."
+      onkeydown="if(event.key==='Enter') checkMeaningType(${globalIdx})" style="margin-top:12px" />
+    <div class="type-feedback" id="mtf${globalIdx}" style="display:none;margin-top:8px"></div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn-accent" onclick="checkMeaningType(${globalIdx})">확인</button>
+    </div>`;
+
+  setTimeout(() => {
+    const inp = document.getElementById('mti' + globalIdx);
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function checkMeaningType(globalIdx) {
+  const input = document.getElementById('mti' + globalIdx);
+  const fb = document.getElementById('mtf' + globalIdx);
+  if (!input || input.disabled) return;
+  const user = normalize(input.value);
+  const correct = normalize(sentences[globalIdx]);
+  fb.style.display = 'block';
+  if (user === correct) {
+    fb.className = 'type-feedback correct';
+    fb.textContent = '✓ 정답!';
+    meaningTypeStats.correct++;
+    input.disabled = true;
+    setTimeout(() => goNextMeaningType(), 800);
+  } else {
+    fb.className = 'type-feedback wrong';
+    const diff = correct.split('').map((c, j) =>
+      user[j] === c ? `<span class="char-ok">${c}</span>` : `<span class="char-err">${c}</span>`
+    ).join('');
+    fb.innerHTML = `✗ 정답: ${diff}`;
+    meaningTypeStats.wrong++;
+    addWrongSentence(globalIdx);
+  }
+}
+
+function goNextMeaningType() {
+  meaningTypeParaSentIdx++;
+  if (meaningTypeParaSentIdx >= getCurrentParaSentences().length) {
+    nextPara(6);
+  } else {
+    renderStep6Card();
+  }
+}
+
+// ══════════════════════════════════════
+//  STEP 7: 문장 타이핑 (문단별)
+// ══════════════════════════════════════
+function buildStep7() {
+  typeStats = { correct: 0, wrong: 0 };
+  updateTypeStats();
+  resetParaIdx();
+  renderStep7Para();
+}
+
+function renderStep7Para() {
   const paraSents = getCurrentParaSentences();
   const offset = getParaOffset(currentParaIdx);
-
   const area = document.getElementById('typeArea');
   area.innerHTML =
-    paraNavHTML(5) +
+    paraNavHTML(7) +
     paraSents.map((s, i) => {
       const globalIdx = offset + i;
       const firstWord = s.split(/\s+/)[0];
@@ -773,22 +1061,21 @@ function updateTypeStats() {
 }
 
 // ══════════════════════════════════════
-//  STEP 6: 암송 (문단별)
+//  STEP 8: 암송 (문단별)
 // ══════════════════════════════════════
-function buildStep6() {
+function buildStep8() {
   recallStats = { ok: 0, no: 0 };
   updateRecallStats();
   resetParaIdx();
-  renderStep6Para();
+  renderStep8Para();
 }
 
-function renderStep6Para() {
+function renderStep8Para() {
   const paraSents = getCurrentParaSentences();
   const offset = getParaOffset(currentParaIdx);
-
   const area = document.getElementById('recallArea');
   area.innerHTML =
-    paraNavHTML(6) +
+    paraNavHTML(8) +
     paraSents.map((s, i) => {
       const globalIdx = offset + i;
       return `
@@ -808,9 +1095,7 @@ function renderStep6Para() {
     }).join('');
 }
 
-function toggleRecall(i) {
-  document.getElementById('rb' + i).classList.toggle('open');
-}
+function toggleRecall(i) { document.getElementById('rb' + i).classList.toggle('open'); }
 
 function markRecall(i, knew) {
   if (knew) recallStats.ok++; else { recallStats.no++; addWrongSentence(i); }
@@ -833,7 +1118,7 @@ function updateRecallStats() {
 function finishStudy() {
   const total = recallStats.ok + recallStats.no;
   const pct = total ? Math.round(recallStats.ok / total * 100) : 0;
-  saveProgress(currentPassage.id, { currentStep: 6 });
+  saveProgress(currentPassage.id, { currentStep: 8 });
   const msg = pct >= 80 ? `🎉 ${pct}% 암기! 거의 다 외웠어요!` : `${pct}% 암기했어요. 복습해봐요!`;
   if (confirm(msg + '\n\n틀린 문장만 복습할까요?')) showReview();
   else showPage('page-home');
