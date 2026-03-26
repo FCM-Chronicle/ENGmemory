@@ -1,3 +1,29 @@
+
+// ══════════════════════════════════════
+//  삭제 권한 단축키 Ctrl+Shift+L
+// ══════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+    e.preventDefault();
+    if (deleteUnlocked) {
+      deleteUnlocked = false;
+      showToast('🔒 삭제 권한 해제');
+    } else {
+      const pw = prompt('비밀번호를 입력하세요:');
+      if (pw === 'engz1234') {
+        deleteUnlocked = true;
+        showToast('🔓 삭제 권한 활성화 (새로고침 시 해제)');
+        setTimeout(() => {
+          deleteUnlocked = false;
+          showToast('🔒 삭제 권한 자동 해제');
+        }, 5 * 60 * 1000); // 5분 후 자동 해제
+      } else if (pw !== null) {
+        showToast('❌ 비밀번호가 틀렸어요');
+      }
+    }
+  }
+});
+
 // ══════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════
@@ -15,6 +41,7 @@ let blankTypeStats = { correct: 0, wrong: 0 };
 let recallStats = { ok: 0, no: 0 };
 let homeTab = 'all';
 let paraInputCount = 0;
+let deleteUnlocked = false;
 
 // ══════════════════════════════════════
 //  초기화
@@ -127,6 +154,10 @@ function formatDate(iso) {
 }
 
 async function deletePassage(id) {
+  if (!deleteUnlocked) {
+    showToast('🔒 삭제 권한이 없어요. Ctrl+Shift+L을 누르세요.');
+    return;
+  }
   if (!confirm('이 지문을 삭제할까요?')) return;
   await apiFetch(`/api/passages/${id}`, { method: 'DELETE' });
   showToast('삭제되었어요');
