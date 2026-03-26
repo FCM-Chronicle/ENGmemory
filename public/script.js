@@ -1,4 +1,3 @@
-
 // ══════════════════════════════════════
 //  삭제 권한 단축키 Ctrl+Shift+L
 // ══════════════════════════════════════
@@ -16,7 +15,7 @@ document.addEventListener('keydown', (e) => {
         setTimeout(() => {
           deleteUnlocked = false;
           showToast('🔒 삭제 권한 자동 해제');
-        }, 5 * 60 * 1000); // 5분 후 자동 해제
+        }, 5 * 60 * 1000);
       } else if (pw !== null) {
         showToast('❌ 비밀번호가 틀렸어요');
       }
@@ -29,13 +28,15 @@ document.addEventListener('keydown', (e) => {
 // ══════════════════════════════════════
 let allPassages = [];
 let currentPassage = null;
-let paragraphs = [];   // 문단 배열 (각 문단 = 문장 배열)
-let sentences = [];    // 전체 문장 (flat)
+let paragraphs = [];
+let sentences = [];
 let currentStep = 0;
+let currentParaIdx = 0;
 let readClicked = new Set();
 let blankMap = {};
 let paraOrderItems = [];
 let orderItems = [];
+let paraOrderItemsMap = {};
 let typeStats = { correct: 0, wrong: 0 };
 let blankTypeStats = { correct: 0, wrong: 0 };
 let recallStats = { ok: 0, no: 0 };
@@ -47,7 +48,7 @@ let deleteUnlocked = false;
 //  초기화
 // ══════════════════════════════════════
 window.onload = () => {
-  addPara(); // 첫 문단 입력 칸
+  addPara();
   loadPassages();
 };
 
@@ -235,7 +236,6 @@ async function uploadPassage() {
 
   if (!title || !paraTexts.length) { showToast('제목과 문단은 필수예요!'); return; }
 
-  // 각 문단을 문장 배열로 변환
   const parasData = paraTexts.map(text => parseSentences(text));
 
   try {
@@ -244,7 +244,6 @@ async function uploadPassage() {
       body: JSON.stringify({ title, author, tags, paragraphs: parasData }),
     });
     showToast('지문이 공유되었어요!');
-    // 초기화
     document.getElementById('upTitle').value = '';
     document.getElementById('upAuthor').value = '';
     document.getElementById('upTags').value = '';
@@ -265,11 +264,9 @@ function startStudy(id) {
   currentPassage = allPassages.find(p => p.id === id);
   if (!currentPassage) return;
 
-  // 문단/문장 파싱
   if (currentPassage.paragraphs && currentPassage.paragraphs.length) {
     paragraphs = currentPassage.paragraphs;
   } else if (currentPassage.content) {
-    // 구버전 호환
     paragraphs = [parseSentences(currentPassage.content)];
   }
   sentences = paragraphs.flat();
@@ -335,23 +332,95 @@ function normalize(str) {
 }
 
 // ══════════════════════════════════════
-//  STEP 0: 정독
+//  문단별 진행 공통 유틸
+// ══════════════════════════════════════
+function resetParaIdx() {
+  currentParaIdx = 0;
+}
+
+function getParaOffset(paraIdx) {
+  return paragraphs.slice(0, paraIdx).reduce((acc, p) => acc + p.length, 0);
+}
+
+function getCurrentParaSentences() {
+  return paragraphs[currentParaIdx] || [];
+}
+
+function paraNavHTML(stepNum) {
+  const total = paragraphs.length;
+  const dots = paragraphs.map((_, i) =>
+    `<span class="para-dot ${i < currentParaIdx ? 'done' : i === currentParaIdx ? 'active' : ''}">${i + 1}</span>`
+  ).join('');
+  const isLast = currentParaIdx >= total - 1;
+  return `
+    <div class="para-nav">
+      <div class="para-dots">${dots}</div>
+      <div class="para-nav-label">문단 ${currentParaIdx + 1} / ${total}</div>
+      <button class="btn-para-next" onclick="nextPara(${stepNum})">
+        ${isLast ? '✓ 이 단계 완료' : '다음 문단 →'}
+      </button>
+    </div>`;
+}
+
+function nextPara(stepNum) {
+  if (currentParaIdx < paragraphs.length - 1) {
+    currentParaIdx++;
+    switch (stepNum) {
+      case 0: renderStep0Para(); break;
+      case 2: renderStep2Para(); break;
+      case 3: renderStep3Para(); break;
+      case 4: renderStep4Para(); break;
+      case 5: renderStep5Para(); break;
+      case 6: renderStep6Para(); break;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    showToast('🎉 모든 문단 완료!');
+    if (stepNum < 6) {
+      if (confirm('이 단계를 완료했어요! 다음 단계로 넘어갈까요?')) {
+        goStep(stepNum + 1);
+      }
+    } else {
+      finishStudy();
+    }
+  }
+}
+
+// ══════════════════════════════════════
+//  STEP 0: 정독 (문단별)
 // ══════════════════════════════════════
 function buildStep0() {
+  resetParaIdx();
   readClicked = new Set();
+  renderStep0Para();
+}
+
+function renderStep0Para() {
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+
   const area = document.getElementById('readArea');
-  area.innerHTML = sentences.map((s, i) => `
-    <div class="read-sentence" id="rs${i}" onclick="clickSentence(${i})">
-      <span class="snum">${i + 1}</span>
-      <span>${s}</span>
-    </div>`).join('');
+  area.innerHTML =
+    paraNavHTML(0) +
+    paraSents.map((s, i) => {
+      const globalIdx = offset + i;
+      return `
+        <div class="read-sentence" id="rs${globalIdx}" onclick="clickSentence(${globalIdx})">
+          <span class="snum">${globalIdx + 1}</span>
+          <span>${s}</span>
+        </div>`;
+    }).join('');
   document.getElementById('readProgress').style.width = '0%';
 }
 
 function clickSentence(i) {
   document.getElementById('rs' + i).classList.toggle('clicked');
   readClicked.add(i);
-  document.getElementById('readProgress').style.width = Math.min(readClicked.size / sentences.length * 100, 100) + '%';
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+  const paraClicked = paraSents.filter((_, j) => readClicked.has(offset + j)).length;
+  document.getElementById('readProgress').style.width =
+    Math.min(paraClicked / paraSents.length * 100, 100) + '%';
 }
 
 // ══════════════════════════════════════
@@ -368,7 +437,7 @@ function renderParaOrderArea() {
     const firstSent = item.para[0] || '';
     return `
       <div class="order-card" id="poc${i}">
-        <span class="drag-handle" 
+        <span class="drag-handle"
           onmousedown="startDrag(event,'para',${i})"
           ontouchstart="startDrag(event,'para',${i})">⠿⠿</span>
         <span class="order-card-text">${firstSent}</span>
@@ -399,33 +468,46 @@ function checkParaOrder() {
 }
 
 // ══════════════════════════════════════
-//  STEP 2: 문장 순서
+//  STEP 2: 문장 순서 (문단별)
 // ══════════════════════════════════════
 function buildOrder() {
-  orderItems = shuffle(sentences.map((s, i) => ({ s, origIdx: i })));
-  renderOrderArea();
+  resetParaIdx();
+  paraOrderItemsMap = {};
+  renderStep2Para();
 }
 
-function renderOrderArea() {
+function renderStep2Para() {
+  const paraSents = getCurrentParaSentences();
+
+  if (!paraOrderItemsMap[currentParaIdx]) {
+    paraOrderItemsMap[currentParaIdx] = shuffle(
+      paraSents.map((s, i) => ({ s, origIdx: i }))
+    );
+  }
+  orderItems = paraOrderItemsMap[currentParaIdx];
+
   const area = document.getElementById('orderArea');
-  area.innerHTML = orderItems.map((item, i) => `
-    <div class="order-card" id="oc${i}">
-      <span class="drag-handle"
-        onmousedown="startDrag(event,'sent',${i})"
-        ontouchstart="startDrag(event,'sent',${i})">⠿⠿</span>
-      <span class="order-card-text">${item.s}</span>
-      <div class="order-btns">
-        <button onclick="moveCard(${i},-1)">▲</button>
-        <button onclick="moveCard(${i},1)">▼</button>
-      </div>
-    </div>`).join('');
+  area.innerHTML =
+    paraNavHTML(2) +
+    orderItems.map((item, i) => `
+      <div class="order-card" id="oc${i}">
+        <span class="drag-handle"
+          onmousedown="startDrag(event,'sent',${i})"
+          ontouchstart="startDrag(event,'sent',${i})">⠿⠿</span>
+        <span class="order-card-text">${item.s}</span>
+        <div class="order-btns">
+          <button onclick="moveCard(${i},-1)">▲</button>
+          <button onclick="moveCard(${i},1)">▼</button>
+        </div>
+      </div>`).join('');
 }
 
 function moveCard(i, dir) {
   const j = i + dir;
   if (j < 0 || j >= orderItems.length) return;
   [orderItems[i], orderItems[j]] = [orderItems[j], orderItems[i]];
-  renderOrderArea();
+  paraOrderItemsMap[currentParaIdx] = orderItems;
+  renderStep2Para();
 }
 
 function checkOrder() {
@@ -482,7 +564,6 @@ function onDragEnd(e) {
   dragClone.remove();
   dragEl.style.opacity = '';
 
-  // 어떤 카드 위에 드롭됐는지 찾기
   const area = document.getElementById(dragType === 'para' ? 'paraOrderArea' : 'orderArea');
   const cards = [...area.querySelectorAll('.order-card')];
   let targetIdx = null;
@@ -501,14 +582,15 @@ function onDragEnd(e) {
       const tmp = orderItems[dragIdx];
       orderItems.splice(dragIdx, 1);
       orderItems.splice(targetIdx, 0, tmp);
-      renderOrderArea();
+      paraOrderItemsMap[currentParaIdx] = orderItems;
+      renderStep2Para();
     }
   }
   dragType = dragIdx = dragEl = dragClone = null;
 }
 
 // ══════════════════════════════════════
-//  STEP 3: 빈칸 보기
+//  STEP 3: 빈칸 보기 (문단별)
 // ══════════════════════════════════════
 function buildStep3() {
   blankMap = {};
@@ -517,54 +599,91 @@ function buildStep3() {
     const n = Math.max(1, Math.round(words.length * 0.35));
     blankMap[i] = shuffle([...Array(words.length).keys()]).slice(0, n);
   });
-  renderBlanks();
+  resetParaIdx();
+  renderStep3Para();
 }
 
-function renderBlanks() {
+function renderStep3Para() {
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+
   const area = document.getElementById('blankArea');
-  area.innerHTML = sentences.map((s, i) => {
-    const words = s.split(/\s+/);
-    const html = words.map((w, j) => {
-      if (blankMap[i].includes(j)) {
-        const clean = w.replace(/[.,!?;:]/g, '');
-        const punct = w.slice(clean.length);
-        return `<span class="blank-word" id="bw${i}_${j}" onclick="toggleBlank(${i},${j})">${clean}</span>${punct} `;
-      }
-      return w + ' ';
+  area.innerHTML =
+    paraNavHTML(3) +
+    paraSents.map((s, i) => {
+      const globalIdx = offset + i;
+      const words = s.split(/\s+/);
+      const html = words.map((w, j) => {
+        if ((blankMap[globalIdx] || []).includes(j)) {
+          const clean = w.replace(/[.,!?;:]/g, '');
+          const punct = w.slice(clean.length);
+          return `<span class="blank-word" id="bw${globalIdx}_${j}" onclick="toggleBlank(${globalIdx},${j})">${clean}</span>${punct} `;
+        }
+        return w + ' ';
+      }).join('');
+      return `<div class="blank-sentence"><span class="blank-num">${globalIdx + 1}</span>${html}</div>`;
     }).join('');
-    return `<div class="blank-sentence"><span class="blank-num">${i + 1}</span>${html}</div>`;
-  }).join('');
 }
 
-function toggleBlank(si, wi) { document.getElementById(`bw${si}_${wi}`).classList.toggle('revealed'); }
-function revealAllBlanks() { document.querySelectorAll('.blank-word').forEach(el => el.classList.add('revealed')); }
-function hideAllBlanks() { document.querySelectorAll('.blank-word').forEach(el => el.classList.remove('revealed')); }
-function reshuffleBlanks() { buildStep3(); }
+function toggleBlank(si, wi) {
+  document.getElementById(`bw${si}_${wi}`).classList.toggle('revealed');
+}
+
+function revealAllBlanks() {
+  document.querySelectorAll('.blank-word').forEach(el => el.classList.add('revealed'));
+}
+
+function hideAllBlanks() {
+  document.querySelectorAll('.blank-word').forEach(el => el.classList.remove('revealed'));
+}
+
+function reshuffleBlanks() {
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+  paraSents.forEach((s, i) => {
+    const globalIdx = offset + i;
+    const words = s.split(/\s+/);
+    const n = Math.max(1, Math.round(words.length * 0.35));
+    blankMap[globalIdx] = shuffle([...Array(words.length).keys()]).slice(0, n);
+  });
+  renderStep3Para();
+}
 
 // ══════════════════════════════════════
-//  STEP 4: 빈칸 타이핑
+//  STEP 4: 빈칸 타이핑 (문단별)
 // ══════════════════════════════════════
 function buildStep4() {
   blankTypeStats = { correct: 0, wrong: 0 };
   updateBlankTypeStats();
+  resetParaIdx();
+  renderStep4Para();
+}
+
+function renderStep4Para() {
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+
   const area = document.getElementById('blankTypeArea');
-  area.innerHTML = sentences.map((s, i) => {
-    const words = s.split(/\s+/);
-    const blanks = blankMap[i] || [];
-    const html = words.map((w, j) => {
-      if (blanks.includes(j)) {
-        const clean = w.replace(/[.,!?;:]/g, '');
-        const punct = w.slice(clean.length);
-        const width = Math.max(70, clean.length * 10);
-        return `<input class="blank-type-input" id="bti${i}_${j}" data-answer="${clean}" 
-          style="width:${width}px"
-          onkeydown="if(event.key==='Enter'||event.key===' ')checkBlankType(${i},${j})"
-          onblur="checkBlankType(${i},${j})" />${punct} `;
-      }
-      return w + ' ';
+  area.innerHTML =
+    paraNavHTML(4) +
+    paraSents.map((s, i) => {
+      const globalIdx = offset + i;
+      const words = s.split(/\s+/);
+      const blanks = blankMap[globalIdx] || [];
+      const html = words.map((w, j) => {
+        if (blanks.includes(j)) {
+          const clean = w.replace(/[.,!?;:]/g, '');
+          const punct = w.slice(clean.length);
+          const width = Math.max(70, clean.length * 10);
+          return `<input class="blank-type-input" id="bti${globalIdx}_${j}" data-answer="${clean}"
+            style="width:${width}px"
+            onkeydown="if(event.key==='Enter'||event.key===' ')checkBlankType(${globalIdx},${j})"
+            onblur="checkBlankType(${globalIdx},${j})" />${punct} `;
+        }
+        return w + ' ';
+      }).join('');
+      return `<div class="blank-sentence"><span class="blank-num">${globalIdx + 1}</span>${html}</div>`;
     }).join('');
-    return `<div class="blank-sentence"><span class="blank-num">${i + 1}</span>${html}</div>`;
-  }).join('');
 }
 
 function checkBlankType(si, wi) {
@@ -593,22 +712,33 @@ function updateBlankTypeStats() {
 }
 
 // ══════════════════════════════════════
-//  STEP 5: 문장 타이핑
+//  STEP 5: 문장 타이핑 (문단별)
 // ══════════════════════════════════════
 function buildStep5() {
   typeStats = { correct: 0, wrong: 0 };
   updateTypeStats();
+  resetParaIdx();
+  renderStep5Para();
+}
+
+function renderStep5Para() {
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+
   const area = document.getElementById('typeArea');
-  area.innerHTML = sentences.map((s, i) => {
-    const firstWord = s.split(/\s+/)[0];
-    return `
-      <div class="type-item">
-        <div class="type-hint">힌트: <span class="first">${firstWord}</span> ...</div>
-        <input class="type-input" id="ti${i}" placeholder="문장 전체를 타이핑하세요..."
-          onkeydown="if(event.key==='Enter') checkType(${i})" />
-        <div class="type-feedback" id="tf${i}" style="display:none"></div>
-      </div>`;
-  }).join('');
+  area.innerHTML =
+    paraNavHTML(5) +
+    paraSents.map((s, i) => {
+      const globalIdx = offset + i;
+      const firstWord = s.split(/\s+/)[0];
+      return `
+        <div class="type-item">
+          <div class="type-hint">힌트: <span class="first">${firstWord}</span> ...</div>
+          <input class="type-input" id="ti${globalIdx}" placeholder="문장 전체를 타이핑하세요..."
+            onkeydown="if(event.key==='Enter') checkType(${globalIdx})" />
+          <div class="type-feedback" id="tf${globalIdx}" style="display:none"></div>
+        </div>`;
+    }).join('');
 }
 
 function checkType(i) {
@@ -643,29 +773,44 @@ function updateTypeStats() {
 }
 
 // ══════════════════════════════════════
-//  STEP 6: 암송
+//  STEP 6: 암송 (문단별)
 // ══════════════════════════════════════
 function buildStep6() {
   recallStats = { ok: 0, no: 0 };
   updateRecallStats();
-  const area = document.getElementById('recallArea');
-  area.innerHTML = sentences.map((s, i) => `
-    <div class="recall-item">
-      <div class="recall-header" onclick="toggleRecall(${i})">
-        <span>문장 ${i + 1}</span>
-        <span style="font-size:.75rem">클릭해서 보기 ▾</span>
-      </div>
-      <div class="recall-body" id="rb${i}">
-        <p>${s}</p>
-        <div class="recall-btns">
-          <button class="btn-knew" onclick="markRecall(${i}, true)">✓ 외웠어요</button>
-          <button class="btn-unknown" onclick="markRecall(${i}, false)">✗ 몰랐어요</button>
-        </div>
-      </div>
-    </div>`).join('');
+  resetParaIdx();
+  renderStep6Para();
 }
 
-function toggleRecall(i) { document.getElementById('rb' + i).classList.toggle('open'); }
+function renderStep6Para() {
+  const paraSents = getCurrentParaSentences();
+  const offset = getParaOffset(currentParaIdx);
+
+  const area = document.getElementById('recallArea');
+  area.innerHTML =
+    paraNavHTML(6) +
+    paraSents.map((s, i) => {
+      const globalIdx = offset + i;
+      return `
+        <div class="recall-item">
+          <div class="recall-header" onclick="toggleRecall(${globalIdx})">
+            <span>문장 ${globalIdx + 1}</span>
+            <span style="font-size:.75rem">클릭해서 보기 ▾</span>
+          </div>
+          <div class="recall-body" id="rb${globalIdx}">
+            <p>${s}</p>
+            <div class="recall-btns">
+              <button class="btn-knew" onclick="markRecall(${globalIdx}, true)">✓ 외웠어요</button>
+              <button class="btn-unknown" onclick="markRecall(${globalIdx}, false)">✗ 몰랐어요</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleRecall(i) {
+  document.getElementById('rb' + i).classList.toggle('open');
+}
 
 function markRecall(i, knew) {
   if (knew) recallStats.ok++; else { recallStats.no++; addWrongSentence(i); }
