@@ -71,19 +71,22 @@ app.get('/api/passages/:id', async (req, res) => {
 // 지문 추가
 app.post('/api/passages', async (req, res) => {
   try {
-    const { title, content, author, tags, paragraphs } = req.body;
+    const { title, content, author, tags, paragraphs, hasMeaning, hasTyping, hasRecall } = req.body;
     if (!title) return res.status(400).json({ error: '제목은 필수' });
 
     const { passages, sha } = await readPassages();
     const newPassage = {
-      id: Date.now().toString(),
-      title,
-      content: content || '',
-      paragraphs: paragraphs || [],
-      author: author || '익명',
-      tags: tags || [],
-      createdAt: new Date().toISOString(),
-    };
+    id: Date.now().toString(),
+    title,
+    content: content || '',
+    paragraphs: paragraphs || [],
+    author: author || '익명',
+    tags: tags || [],
+    hasMeaning: hasMeaning || false,   // ← 추가
+    hasTyping: hasTyping !== false,     // ← 추가
+    hasRecall: hasRecall !== false,     // ← 추가
+    createdAt: new Date().toISOString(),
+  };
     passages.push(newPassage);
     await writePassages(passages, sha);
     res.json(newPassage);
