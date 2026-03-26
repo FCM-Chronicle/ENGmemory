@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>내신 영어 암기</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     홈 화면 (지문 목록)
+══════════════════════════════ -->
+<div id="page-home" class="page active">
+  <header>
+    <h1 class="logo">MEMENG</h1>
+    <button class="btn-accent" onclick="showPage('page-upload')">+ 지문 올리기</button>
+  </header>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="제목, 태그로 검색..." oninput="filterPassages()" />
+  </div>
+
+  <div id="passageList" class="passage-list">
+    <div class="empty-state">불러오는 중...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     지문 올리기
+══════════════════════════════ -->
+<div id="page-upload" class="page">
+  <header>
+    <button class="btn-back" onclick="showPage('page-home')">← 돌아가기</button>
+    <h2>지문 올리기</h2>
+  </header>
+
+  <div class="form-wrap">
+    <label>제목</label>
+    <input type="text" id="upTitle" placeholder="예: 수능특강 1강" />
+
+    <label>작성자</label>
+    <input type="text" id="upAuthor" placeholder="이름 (선택)" />
+
+    <label>태그 <span class="hint">(쉼표로 구분)</span></label>
+    <input type="text" id="upTags" placeholder="예: 수능특강, 1강" />
+
+    <label>지문</label>
+    <textarea id="upContent" placeholder="영어 지문을 여기에 붙여넣으세요..."></textarea>
+
+    <button class="btn-secondary" onclick="previewSentences()">문장 미리보기</button>
+    <div id="previewArea" class="preview-area" style="display:none"></div>
+
+    <button class="btn-accent full" onclick="uploadPassage()">저장하기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     학습 페이지
+══════════════════════════════ -->
+<div id="page-study" class="page">
+  <header>
+    <button class="btn-back" onclick="showPage('page-home')">← 목록</button>
+    <h2 id="studyTitle"></h2>
+  </header>
+
+  <!-- 단계 탭 -->
+  <div class="step-tabs">
+    <button class="step-tab" data-step="0" onclick="goStep(0)"><span class="tab-num">1</span><span class="tab-label">정독</span></button>
+    <button class="step-tab" data-step="1" onclick="goStep(1)"><span class="tab-num">2</span><span class="tab-label">순서</span></button>
+    <button class="step-tab" data-step="2" onclick="goStep(2)"><span class="tab-num">3</span><span class="tab-label">빈칸</span></button>
+    <button class="step-tab" data-step="3" onclick="goStep(3)"><span class="tab-num">4</span><span class="tab-label">타이핑</span></button>
+    <button class="step-tab" data-step="4" onclick="goStep(4)"><span class="tab-num">5</span><span class="tab-label">암송</span></button>
+  </div>
+
+  <!-- 단계별 콘텐츠 -->
+  <div class="step-content">
+
+    <!-- 1단계: 정독 -->
+    <div id="step-0" class="step-panel active">
+      <p class="step-desc">문장을 클릭하며 읽어보세요.</p>
+      <div class="progress-bar"><div id="readProgress" class="progress-fill"></div></div>
+      <div id="readArea" class="read-area"></div>
+      <div class="step-nav">
+        <span></span>
+        <button class="btn-accent" onclick="goStep(1)">다음 →</button>
+      </div>
+    </div>
+
+    <!-- 2단계: 문장 순서 -->
+    <div id="step-1" class="step-panel">
+      <p class="step-desc">문장을 올바른 순서로 배열하세요.</p>
+      <div id="orderArea" class="order-area"></div>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="goStep(0)">← 이전</button>
+        <button class="btn-accent" onclick="checkOrder()">정답 확인</button>
+        <button class="btn-accent" onclick="goStep(2)">다음 →</button>
+      </div>
+    </div>
+
+    <!-- 3단계: 빈칸 -->
+    <div id="step-2" class="step-panel">
+      <p class="step-desc">빈칸을 클릭하면 단어가 보여요.</p>
+      <div class="blank-controls">
+        <button class="btn-secondary sm" onclick="revealAllBlanks()">전체 보기</button>
+        <button class="btn-secondary sm" onclick="hideAllBlanks()">전체 숨기기</button>
+        <button class="btn-secondary sm" onclick="reshuffleBlanks()">다시 섞기</button>
+      </div>
+      <div id="blankArea" class="blank-area"></div>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="goStep(1)">← 이전</button>
+        <button class="btn-accent" onclick="goStep(3)">다음 →</button>
+      </div>
+    </div>
+
+    <!-- 4단계: 타이핑 -->
+    <div id="step-3" class="step-panel">
+      <p class="step-desc">첫 단어를 보고 문장 전체를 타이핑하세요.</p>
+      <div class="type-stats">
+        <span>정답 <b id="typeCorrect">0</b></span>
+        <span>틀림 <b id="typeWrong">0</b></span>
+        <span>정확도 <b id="typeAcc">—</b></span>
+      </div>
+      <div id="typeArea" class="type-area"></div>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="goStep(2)">← 이전</button>
+        <button class="btn-accent" onclick="goStep(4)">다음 →</button>
+      </div>
+    </div>
+
+    <!-- 5단계: 암송 -->
+    <div id="step-4" class="step-panel">
+      <p class="step-desc">클릭해서 문장을 확인하고 스스로 평가하세요.</p>
+      <div class="recall-stats">
+        암기율 <b id="recallPct">0%</b>
+        <div class="progress-bar" style="margin-top:8px"><div id="recallProgress" class="progress-fill"></div></div>
+      </div>
+      <div id="recallArea" class="recall-area"></div>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="goStep(3)">← 이전</button>
+        <button class="btn-accent" onclick="finishStudy()">🎉 완료!</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     복습 페이지
+══════════════════════════════ -->
+<div id="page-review" class="page">
+  <header>
+    <button class="btn-back" onclick="showPage('page-study')">← 학습으로</button>
+    <h2>틀린 문장 복습</h2>
+  </header>
+  <div id="reviewArea" class="type-area"></div>
+  <div class="step-nav" style="margin-top:20px">
+    <button class="btn-accent full" onclick="showPage('page-home')">홈으로</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
