@@ -19,9 +19,13 @@ const HEADERS = {
 
 // GitHub에서 현재 JSON 읽기
 async function readPassages() {
+  console.log('API_BASE:', API_BASE);
+  console.log('TOKEN 있음:', !!GITHUB_TOKEN);
   const res = await fetch(API_BASE, { headers: HEADERS });
-  if (res.status === 404) return { passages: [], sha: null };
+  console.log('GitHub 응답 상태:', res.status);
   const data = await res.json();
+  console.log('GitHub 응답 내용:', JSON.stringify(data).slice(0, 200));
+  if (res.status === 404) return { passages: [], sha: null };
   const content = Buffer.from(data.content, 'base64').toString('utf-8');
   return { passages: JSON.parse(content), sha: data.sha };
 }
