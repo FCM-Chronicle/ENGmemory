@@ -71,14 +71,15 @@ app.get('/api/passages/:id', async (req, res) => {
 // 지문 추가
 app.post('/api/passages', async (req, res) => {
   try {
-    const { title, content, author, tags } = req.body;
-    if (!title || !content) return res.status(400).json({ error: '제목과 내용은 필수' });
+    const { title, content, author, tags, paragraphs } = req.body;
+    if (!title) return res.status(400).json({ error: '제목은 필수' });
 
     const { passages, sha } = await readPassages();
     const newPassage = {
       id: Date.now().toString(),
       title,
-      content,
+      content: content || '',
+      paragraphs: paragraphs || [],
       author: author || '익명',
       tags: tags || [],
       createdAt: new Date().toISOString(),
@@ -110,4 +111,3 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`서버 실행중 : ${PORT}`));
-1
