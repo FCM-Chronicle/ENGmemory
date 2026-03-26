@@ -15,17 +15,16 @@ const API_BASE = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_
 const HEADERS = {
   'Authorization': `token ${GITHUB_TOKEN}`,
   'Content-Type': 'application/json',
+  'Cache-Control': 'no-cache',
 };
 
 // GitHub에서 현재 JSON 읽기
 async function readPassages() {
-  console.log('API_BASE:', API_BASE);
-  console.log('TOKEN 있음:', !!GITHUB_TOKEN);
-  const res = await fetch(API_BASE, { headers: HEADERS });
-  console.log('GitHub 응답 상태:', res.status);
-  const data = await res.json();
-  console.log('GitHub 응답 내용:', JSON.stringify(data).slice(0, 200));
+  const url = `${API_BASE}?t=${Date.now()}`;
+  const res = await fetch(url, { headers: HEADERS });
   if (res.status === 404) return { passages: [], sha: null };
+  const data = await res.json();
+  if (!data.content) return { passages: [], sha: null };
   const content = Buffer.from(data.content, 'base64').toString('utf-8');
   return { passages: JSON.parse(content), sha: data.sha };
 }
@@ -111,3 +110,4 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`서버 실행중 : ${PORT}`));
+1
