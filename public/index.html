@@ -47,6 +47,10 @@
     <div id="paragraphInputs"></div>
     <button class="btn-secondary" onclick="addPara()" style="margin-top:4px">+ 문단 추가</button>
     <button class="btn-accent full" onclick="uploadPassage()">저장하기</button>
+    <label><input type="checkbox" id="meaningToggle" onchange="toggleMeaningMode()"> 뜻 포함</label>
+  <div id="meaningHint" style="display:none" class="hint">영어 문장 입력 후 줄바꿈, 다음 줄에 한글 뜻을 입력하세요.</div>
+  <label><input type="checkbox" id="typingToggle" checked> 문장 타이핑 포함</label>
+  <label><input type="checkbox" id="recallToggle" checked> 암송 포함</label>
   </div>
 </div>
 
