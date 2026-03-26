@@ -229,3 +229,179 @@ header h2 { font-size: 1rem; font-weight: 500; flex: 1; text-align: center; }
 .answer-word:hover { opacity: .8; }
 .word-arrange-actions { display: flex; gap: 8px; margin-top: 8px; }
 .read-meaning { font-size: .8rem; color: var(--text2); margin-top: 4px; }
+
+/* ══════════════════════════════════════
+   업로드 옵션 토글
+══════════════════════════════════════ */
+.upload-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 4px 0 8px;
+}
+.option-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: .88rem;
+  color: var(--text);
+}
+.option-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.option-hint {
+  padding-left: 28px;
+  margin-top: -4px;
+}
+
+/* ══════════════════════════════════════
+   스텝 탭 비활성화
+══════════════════════════════════════ */
+.step-tab.disabled {
+  opacity: .3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════
+   정독 뜻
+══════════════════════════════════════ */
+.read-meaning {
+  font-size: .78rem;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+/* ══════════════════════════════════════
+   문단 네비게이션
+══════════════════════════════════════ */
+.para-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.para-dots { display: flex; gap: 6px; flex-wrap: wrap; }
+.para-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  font-weight: 600;
+  background: var(--border);
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.para-dot.active { background: var(--accent); color: #000; }
+.para-dot.done { background: var(--green); color: #000; }
+.para-nav-label { flex: 1; font-size: .82rem; color: var(--text2); white-space: nowrap; }
+.btn-para-next {
+  padding: 6px 14px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: .82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.btn-para-next:hover { opacity: .85; }
+
+/* ══════════════════════════════════════
+   뜻보고 단어 배열
+══════════════════════════════════════ */
+.word-arrange-progress {
+  font-size: .8rem;
+  color: var(--text2);
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.word-arrange-meaning {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.word-arrange-answer-area {
+  min-height: 48px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 12px;
+  background: var(--surface);
+  transition: border-color .2s;
+}
+.word-arrange-answer-area:has(.answer-word) {
+  border-color: var(--accent);
+}
+.word-arrange-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.word-arrange-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.word-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .88rem;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all .15s;
+}
+.word-card:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #1a1f0a;
+}
+.word-card:disabled, .word-card.used {
+  opacity: .2;
+  cursor: default;
+}
+.answer-word {
+  background: var(--accent);
+  color: #000;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  transition: opacity .15s;
+}
+.answer-word:hover { opacity: .75; }
+
