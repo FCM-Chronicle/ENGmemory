@@ -448,7 +448,8 @@ function getCurrentParaMeanings() {
 function paraNavHTML(stepNum) {
   const total = paragraphs.length;
   const dots = paragraphs.map((_, i) =>
-    `<span class="para-dot ${i < currentParaIdx ? 'done' : i === currentParaIdx ? 'active' : ''}">${i + 1}</span>`
+    `<span class="para-dot ${i < currentParaIdx ? 'done' : i === currentParaIdx ? 'active' : ''}"
+      onclick="jumpToPara(${i}, ${stepNum})" style="cursor:pointer">${i + 1}</span>`
   ).join('');
   const isLast = currentParaIdx >= total - 1;
   return `
@@ -459,6 +460,22 @@ function paraNavHTML(stepNum) {
         ${isLast ? '✓ 이 단계 완료' : '다음 문단 →'}
       </button>
     </div>`;
+}
+
+function jumpToPara(idx, stepNum) {
+  if (idx === currentParaIdx) return;
+  currentParaIdx = idx;
+  switch (stepNum) {
+    case 0: renderStep0Para(); break;
+    case 2: renderStep2Para(); break;
+    case 3: renderStep3Para(); break;
+    case 4: renderStep4Para(); break;
+    case 5: wordArrangeParaSentIdx = 0; renderStep5Card(); break;
+    case 6: meaningTypeParaSentIdx = 0; renderStep6Card(); break;
+    case 7: renderStep7Para(); break;
+    case 8: renderStep8Para(); break;
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function setBlankRatio(ratio) {
@@ -860,7 +877,8 @@ function renderStep5Card() {
   wordArrangeSelected = [];
 
   const dotsHTML = paragraphs.map((_, pi) =>
-    `<span class="para-dot ${pi < currentParaIdx ? 'done' : pi === currentParaIdx ? 'active' : ''}">${pi + 1}</span>`
+    `<span class="para-dot ${pi < currentParaIdx ? 'done' : pi === currentParaIdx ? 'active' : ''}"
+      onclick="jumpToPara(${pi}, 5)" style="cursor:pointer">${pi + 1}</span>`
   ).join('');
 
   const area = document.getElementById('wordArrangeArea');
@@ -972,7 +990,8 @@ function renderStep6Card() {
   const meaning = paraMeans[i] || '';
 
   const dotsHTML = paragraphs.map((_, pi) =>
-    `<span class="para-dot ${pi < currentParaIdx ? 'done' : pi === currentParaIdx ? 'active' : ''}">${pi + 1}</span>`
+    `<span class="para-dot ${pi < currentParaIdx ? 'done' : pi === currentParaIdx ? 'active' : ''}"
+      onclick="jumpToPara(${pi}, 6)" style="cursor:pointer">${pi + 1}</span>`
   ).join('');
 
   const area = document.getElementById('meaningTypeArea');
