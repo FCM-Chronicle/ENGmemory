@@ -801,10 +801,10 @@ function renderStep4Para() {
           const clean = w.replace(/[.,!?;:]/g, '');
           const punct = w.slice(clean.length);
           const width = Math.max(70, clean.length * 10);
-          // ✅ 수정: onblur 제거, Enter/Space 키만 체크
           return `<input class="blank-type-input" id="bti${globalIdx}_${j}" data-answer="${clean}"
             style="width:${width}px"
-            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();checkBlankType(${globalIdx},${j})}" />${punct} `;
+            oninput="checkBlankType(${globalIdx},${j})"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();checkBlankType(${globalIdx},${j})}" />${punct} `;
         }
         return w + ' ';
       }).join('');
