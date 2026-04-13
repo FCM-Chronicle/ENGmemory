@@ -319,7 +319,7 @@ function shuffle(arr) {
 
 function normalize(str) {
   return str.trim().toLowerCase()
-    .replace(/[.,!?;:'"]/g, ' ')  // 구두점을 제거 대신 공백으로
+    .replace(/[.,!?;:'"]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -470,7 +470,7 @@ function setBlankRatio(ratio) {
     const n = ratio >= 1 ? words.length : Math.max(1, Math.round(words.length * ratio));
     blankMap[globalIdx] = shuffle([...Array(words.length).keys()]).slice(0, n);
   });
-  buildStep4();  // 통계 초기화 후 재렌더
+  buildStep4();
 }
 
 function nextPara(stepNum) {
@@ -756,7 +756,7 @@ function reshuffleBlanks() {
 }
 
 // ══════════════════════════════════════
-//  STEP 4: 빈칸 타이핑 (문단별)
+//  STEP 4: 빈칸 타이핑 (문단별) — 버그 수정됨
 // ══════════════════════════════════════
 function buildStep4() {
   blankTypeStats = { correct: 0, wrong: 0 };
@@ -784,10 +784,10 @@ function renderStep4Para() {
           const clean = w.replace(/[.,!?;:]/g, '');
           const punct = w.slice(clean.length);
           const width = Math.max(70, clean.length * 10);
+          // ✅ 수정: onblur 제거, Enter/Space 키만 체크
           return `<input class="blank-type-input" id="bti${globalIdx}_${j}" data-answer="${clean}"
             style="width:${width}px"
-            onkeydown="if(event.key==='Enter'||event.key===' ')checkBlankType(${globalIdx},${j})"
-            onblur="checkBlankType(${globalIdx},${j})" />${punct} `;
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();checkBlankType(${globalIdx},${j})}" />${punct} `;
         }
         return w + ' ';
       }).join('');
@@ -804,15 +804,24 @@ function checkBlankType(si, wi) {
   if (!user) return;
 
   if (user === correct) {
-    input.disabled = true;          // 맞으면 잠금
+    input.disabled = true;
     input.classList.remove('wrong');
     input.classList.add('correct');
     blankTypeStats.correct++;
     updateBlankTypeStats();
+
+    // ✅ 수정: 현재 문단의 모든 빈칸이 완료됐으면 자동으로 다음 문단 이동
+    const allDone = [...document.querySelectorAll('.blank-type-input')]
+      .every(inp => inp.disabled);
+    if (allDone) {
+      setTimeout(() => nextPara(4), 600);
+    }
   } else {
     input.classList.remove('correct');
-    input.classList.add('wrong');   // 틀려도 잠금 안 함 → 재입력 가능
+    input.classList.add('wrong');
     input.title = `정답: ${answer}`;
+    blankTypeStats.wrong++;
+    updateBlankTypeStats();
   }
 }
 
