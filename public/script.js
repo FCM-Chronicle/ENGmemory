@@ -318,11 +318,47 @@ function shuffle(arr) {
 }
 
 function normalize(str) {
-  return str.trim().toLowerCase()
-    .replace(/[.,!?;:'"]/g, ' ')
+  if (!str) return '';
+  
+  let normal = str.trim().toLowerCase();
+
+  // 1. 모든 종류의 어퍼스트로피를 하나로 통일
+  normal = normal.replace(/[\u2018\u2019\u02BC]/g, "'");
+
+  // 2. 축약형을 풀어서 동일하게 처리 (기본적인 것들)
+  const contractions = {
+    "you're": "you are",
+    "i'm": "i am",
+    "he's": "he is", // 주의: he has일 수도 있으나 학습용으로는 통상 is로 처리
+    "she's": "she is",
+    "it's": "it is",
+    "they're": "they are",
+    "we're": "we are",
+    "don't": "do not",
+    "doesn't": "does not",
+    "didn't": "did not",
+    "can't": "cannot",
+    "won't": "will not",
+    "isn't": "is not",
+    "aren't": "are not",
+    "wasn't": "was not",
+    "weren't": "were not",
+    "haven't": "have not",
+    "hasn't": "has not"
+  };
+
+  for (let key in contractions) {
+    // 사용자가 축약형을 썼든 풀어 썼든 하나로 통일 (여기서는 풀어쓴 형태로 통일)
+    normal = normal.replace(new RegExp(key, 'g'), contractions[key]);
+  }
+
+  // 3. 문장 부호 제거 및 공백 정규화
+  return normal
+    .replace(/[.,!?;:'"]/g, ' ') // 비교 시에는 부호 무시
     .replace(/\s+/g, ' ')
     .trim();
 }
+
 
 function escapeAttr(str) {
   return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -815,32 +851,33 @@ function renderStep4Para() {
 function checkBlankType(si, wi) {
   const input = document.getElementById(`bti${si}_${wi}`);
   if (!input || input.disabled) return;
+
   const answer = input.dataset.answer;
-  const user = normalize(input.value);
-  const correct = normalize(answer);
-  if (!user) return;
-
-  if (user === correct) {
-    input.disabled = true;
+  const user = input.value; // normalize 하지 않은 원본 입력값
+  
+  // 현재 입력한 부분까지만 정답과 비교
+  const currentAnswerPart = answer.substring(0, user.length);
+  
+  if (normalize(user) === normalize(currentAnswerPart)) {
+    // 여기까지는 맞았음
     input.classList.remove('wrong');
-    input.classList.add('correct');
-    blankTypeStats.correct++;
-    updateBlankTypeStats();
-
-    // ✅ 수정: 현재 문단의 모든 빈칸이 완료됐으면 자동으로 다음 문단 이동
-    const allDone = [...document.querySelectorAll('.blank-type-input')]
-      .every(inp => inp.disabled);
-    if (allDone) {
-      setTimeout(() => nextPara(4), 600);
+    
+    // 전체가 다 맞았는지 확인
+    if (normalize(user) === normalize(answer)) {
+      input.disabled = true;
+      input.classList.add('correct');
+      blankTypeStats.correct++;
+      updateBlankTypeStats();
+      
+      const allDone = [...document.querySelectorAll('.blank-type-input')].every(inp => inp.disabled);
+      if (allDone) setTimeout(() => nextPara(4), 600);
     }
   } else {
-    input.classList.remove('correct');
+    // 한 글자라도 틀리는 순간 바로 빨간색
     input.classList.add('wrong');
-    input.title = `정답: ${answer}`;
-    blankTypeStats.wrong++;
-    updateBlankTypeStats();
   }
 }
+
 
 function updateBlankTypeStats() {
   document.getElementById('blankTypeCorrect').textContent = blankTypeStats.correct;
