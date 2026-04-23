@@ -1099,6 +1099,7 @@ function renderStep7Para() {
   const paraSents = getCurrentParaSentences();
   const offset = getParaOffset(currentParaIdx);
   const area = document.getElementById('typeArea');
+  
   area.innerHTML =
     paraNavHTML(7) +
     paraSents.map((s, i) => {
@@ -1107,12 +1108,16 @@ function renderStep7Para() {
       return `
         <div class="type-item">
           <div class="type-hint">힌트: <span class="first">${firstWord}</span> ...</div>
-          <input class="type-input" id="ti${globalIdx}" placeholder="문장 전체를 타이핑하세요..."
-            onkeydown="if(event.key==='Enter') checkType(${globalIdx})" />
+          <input class="type-input" 
+                 id="ti${globalIdx}" 
+                 placeholder="문장 전체를 타이핑하세요..."
+                 oninput="checkTypeRealtime(${globalIdx})"
+                 autocomplete="off" />
           <div class="type-feedback" id="tf${globalIdx}" style="display:none"></div>
         </div>`;
     }).join('');
 }
+
 
 function checkType(i) {
   const input = document.getElementById('ti' + i);
@@ -1136,6 +1141,47 @@ function checkType(i) {
     addWrongSentence(i);
   }
   updateTypeStats();
+}
+
+function checkTypeRealtime(i) {
+  const input = document.getElementById('ti' + i);
+  const fb = document.getElementById('tf' + i);
+  if (!input || input.disabled) return;
+
+  const originalAnswer = sentences[i]; // 원문
+  const userValue = input.value;       // 사용자 입력값
+
+  // 1. 현재 입력한 길이만큼만 원문에서 잘라내기
+  const answerPart = originalAnswer.substring(0, userValue.length);
+
+  // 2. 비교 (강화된 normalize 사용)
+  if (normalize(userValue) === normalize(answerPart)) {
+    // 맞고 있는 경우: 빨간색 제거
+    input.classList.remove('wrong');
+    fb.style.display = 'none';
+
+    // 3. 문장 전체가 완성되었는지 확인
+    if (normalize(userValue) === normalize(originalAnswer)) {
+      input.disabled = true;
+      input.classList.remove('wrong');
+      input.classList.add('correct');
+      
+      fb.style.display = 'block';
+      fb.className = 'type-feedback correct';
+      fb.textContent = '✓ 완벽합니다!';
+      
+      typeStats.correct++;
+      updateTypeStats();
+      
+      // 해당 문단 모든 문장 완료 체크 (선택 사항: 자동 다음 문단 이동 로직 추가 가능)
+    }
+  } else {
+    // 틀린 경우: 즉시 빨간색 피드백
+    input.classList.add('wrong');
+    fb.style.display = 'block';
+    fb.className = 'type-feedback wrong';
+    fb.textContent = '글자가 틀렸습니다. 다시 확인해보세요!';
+  }
 }
 
 function updateTypeStats() {
