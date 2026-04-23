@@ -15,6 +15,18 @@
   --radius: 10px;
 }
 
+.blank-type-input.wrong, .type-input.wrong {
+  border-color: #ff4d4d !important;
+  background-color: #fff0f0 !important;
+  color: #ff4d4d;
+}
+
+.blank-type-input.correct, .type-input.correct {
+  border-color: #4CAF50 !important;
+  background-color: #f0fff0 !important;
+}
+
+
 body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: 15px; min-height: 100vh; }
 
 .page { display: none; max-width: 720px; margin: 0 auto; padding: 20px 16px 80px; }
