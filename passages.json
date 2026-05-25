@@ -151,5 +151,132 @@
     "hasTyping": true,
     "hasRecall": true,
     "createdAt": "2026-03-26T15:05:33.055Z"
+  },
+  {
+    "id": "1779724000884",
+    "title": "배재고 고1 1학기 기말 지문",
+    "content": "",
+    "paragraphs": [
+      {
+        "sentences": [
+          "AI: Opportunity or Threat?",
+          "Recently, an artist used an artificial intelligence (AI) system to create the image above for an art contest.",
+          "The image won first place in the digital arts category.",
+          "This led to a controversy in the art community.",
+          "Some people complained that the artist simply provided the system with basic instructions and let it do all the work.",
+          "They felt this wasn't fair to the rest of the artists in the contest.",
+          "However, there were also people who were excited by the potential of AI.",
+          "Today, there are numerous AI programs that can create various forms of art including images, songs, and novels."
+        ],
+        "meanings": [
+          "AI: 기회인가, 위협인가?",
+          "최근 한 예술가는 인공지능(AI) 시스템을 사용해 위의 이미지를 예술 대회에 출품했습니다.",
+          "이 이미지는 디지털 아트 부문에서 1등을 차지했습니다.",
+          "이 일은 미술계에서 논란을 일으켰습니다.",
+          "일부 사람들은 그 예술가가 단지 시스템에 기본적인 지시만 주고, 나머지는 AI가 모두 처리했다고 불평했습니다.",
+          "그들은 이것이 대회의 다른 예술가들에게 불공평하다고 느꼈습니다.",
+          "하지만 AI의 잠재력에 흥미를 느끼는 사람들도 있었습니다.",
+          "오늘날에는 이미지, 노래, 소설 등 다양한 형태의 예술을 만들어내는 수많은 AI 프로그램들이 존재합니다."
+        ]
+      },
+      {
+        "sentences": [
+          "Example 1 Making Digital Images with AI.",
+          "AI image generators create images based on our text requests.",
+          "They do this by copying other images that were created by humans.",
+          "The generators have the ability to analyze millions of images and their corresponding descriptions.",
+          "This allows them to create works of art in a short time based on the provided instructions.",
+          "Moreover, AI programs can mix the styles of existing images upon request.",
+          "For example, you can blend a photograph of a cat with Johannes Vermeer's Girl with a Pearl Earring.",
+          "These two images have a few differences. However, the overall design, the eyes, and the scarf around the head are clearly based on Vermeer's painting.",
+          "A simple request was enough to create this complex and detailed image."
+        ],
+        "meanings": [
+          "예시 1 AI로 디지털 이미지 만들기.",
+          "AI 이미지 생성기는 우리가 입력한 텍스트 요청을 바탕으로 이미지를 생성합니다.",
+          "이들은 인간이 만든 다른 이미지들을 복사하는 방식으로 작동합니다.",
+          "AI 생성기는 수백만 개의 이미지와 그에 대응하는 설명을 분석하는 능력을 가지고 있습니다.",
+          "이 덕분에 지시만 주면 짧은 시간 안에 예술 작품을 만들어낼 수 있습니다.",
+          "더 나아가, AI 프로그램은 요청에 따라 기존 이미지들의 스타일을 섞는 것도 가능합니다.",
+          "예를 들어, 고양이 사진과 요하네스 페르메이르의 《진주 귀걸이를 한 소녀》를 결합할 수 있습니다.",
+          "이 두 이미지는 몇 가지 차이가 있지만, 전체적인 구성, 눈, 그리고 머리를 감싼 스카프는 분명히 페르메이르의 그림을 기반으로 하고 있습니다.",
+          "복잡하고 세부적인 이 이미지를 만들기 위해 단순한 요청만으로 충분했습니다."
+        ]
+      },
+      {
+        "sentences": [
+          "Example 2 Making Music with AI.",
+          "AI programs may lead to changes not only in the art world but also in the music industry.",
+          "These programs are already able to compose songs, and they give you many options.",
+          "For example, you can choose the style and key, such as C major or A minor.",
+          "You can also set how long the song will be.",
+          "Once you've entered the information, the program will produce a song that you can edit or use as it is.",
+          "Furthermore, computer-generated imagery (commonly known as CGI) has opened up new possibilities in the music industry.",
+          "Virtual influencers with extremely realistic faces, bodies, and voices have already released several songs.",
+          "Some of them have many followers on social media, just like human singers.",
+          "These types of virtual musicians are able to speak and move realistically with the help of their human creators."
+        ],
+        "meanings": [
+          "예시 2 AI로 음악 만들기.",
+          "AI 프로그램은 미술 분야뿐만 아니라 음악 산업에도 변화를 가져올 수 있습니다.",
+          "이러한 프로그램들은 이미 노래를 작곡할 수 있으며, 다양한 선택지를 제공합니다.",
+          "예를 들어, 음악의 스타일과 키(C장조, A단조 등)를 선택할 수 있습니다.",
+          "노래의 길이도 설정할 수 있습니다.",
+          "정보를 입력하면, 프로그램은 편집하거나 그대로 사용할 수 있는 노래를 만들어 줍니다.",
+          "게다가, CGI(컴퓨터 생성 이미지)는 음악 산업에 새로운 가능성을 열어주었습니다.",
+          "얼굴, 몸, 목소리가 매우 사실적으로 표현된 가상 인플루언서들이 이미 여러 곡을 발표했습니다.",
+          "그들 중 일부는 실제 가수들처럼 소셜 미디어에서 많은 팔로워를 보유하고 있습니다.",
+          "이런 가상 뮤지션들은 인간 창작자들의 도움을 받아 현실감 있게 말하고 움직일 수 있습니다."
+        ]
+      },
+      {
+        "sentences": [
+          "The Debate on Using AI.",
+          "Many AI programs are open to the public, which means they can be used freely and conveniently.",
+          "However, these programs have sparked a debate over their impact on humans.",
+          "Since AI has the potential to learn skills and perform them better than humans, some people view it as a threat.",
+          "They worry that AI will replace humans in more and more areas.",
+          "There are also concerns that AI may imitate the styles of human artists without their consent.",
+          "On the other hand, others think that AI cannot exceed human imagination and that it is still dependent on human assistance.",
+          "This is because the data that AI uses can have flaws or limitations.",
+          "A dependence on imperfect data with little diversity eventually limits the output of AI programs.",
+          "Human imagination, on the other hand, has no limits or boundaries."
+        ],
+        "meanings": [
+          "AI 사용에 대한 논쟁.",
+          "많은 AI 프로그램들이 대중에게 공개되어 있어서 자유롭고 편리하게 사용할 수 있습니다.",
+          "하지만 이러한 프로그램들은 인간에게 미치는 영향에 대해 논쟁을 불러일으켰습니다.",
+          "AI는 기술을 학습하고 인간보다 더 잘 수행할 가능성이 있기 때문에, 일부 사람들은 AI를 위협으로 보고 있습니다.",
+          "그들은 AI가 점점 더 많은 영역에서 인간을 대체할 것을 우려합니다.",
+          "또한, AI가 인간 예술가들의 동의 없이 그들의 스타일을 모방할 수도 있다는 점에 대해서도 걱정이 있습니다.",
+          "반면, 어떤 사람들은 AI는 인간의 상상력을 뛰어넘을 수 없고 여전히 인간의 도움에 의존한다고 생각합니다.",
+          "왜냐하면 AI가 사용하는 데이터는 결점이 있거나 제한적일 수 있기 때문입니다.",
+          "다양성이 부족한 불완전한 데이터에 의존하게 되면, 결국 AI 프로그램의 결과물도 제한되게 됩니다.",
+          "반면, 인간의 상상력은 한계가 없습니다."
+        ]
+      },
+      {
+        "sentences": [
+          "What kind of future do you think lies ahead of us?",
+          "Will more people use AI programs to boost their creativity and productivity?",
+          "Or will people grow tired of the limitations of AI tools?",
+          "AI provides many benefits and new opportunities.",
+          "What we need to do is figure out how to use AI tools ethically and think about how humans and AI can collaborate."
+        ],
+        "meanings": [
+          "앞으로 어떤 미래가 우리를 기다리고 있을까요?",
+          "더 많은 사람들이 창의성과 생산성을 높이기 위해 AI 프로그램을 사용할까요?",
+          "아니면 AI 도구의 한계에 지쳐버릴까요?",
+          "AI는 많은 혜택과 새로운 기회를 제공합니다.",
+          "우리가 해야 할 일은 AI 도구를 윤리적으로 사용하는 방법을 찾고, 인간과 AI가 어떻게 협력할 수 있을지 고민하는 것입니다."
+        ]
+      }
+    ],
+    "author": "esaylee",
+    "tags": [],
+    "hasMeaning": true,
+    "hasTyping": true,
+    "hasRecall": true,
+    "createdAt": "2026-05-25T15:46:40.884Z"
   }
 ]
