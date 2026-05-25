@@ -92,7 +92,10 @@
       <p class="step-desc">문장을 클릭하며 읽어보세요.</p>
       <div class="progress-bar"><div id="readProgress" class="progress-fill"></div></div>
       <div id="readArea" class="read-area"></div>
-      <div class="step-nav"><span></span><button class="btn-accent" onclick="goStep(1)">다음 →</button></div>
+      <div class="step-nav">
+        <span></span>
+        <button class="btn-accent" onclick="goStep(1)">다음 →</button>
+      </div>
     </div>
 
     <!-- STEP 1: 문단 순서 -->
@@ -101,8 +104,8 @@
       <div id="paraOrderArea" class="order-area"></div>
       <div class="step-nav">
         <button class="btn-secondary" onclick="goStep(0)">← 이전</button>
-        <button class="btn-accent" onclick="checkParaOrder()">정답 확인</button>
         <button class="btn-accent" onclick="goStep(2)">다음 →</button>
+        <button class="btn-accent" onclick="checkParaOrder()">정답 확인</button>
       </div>
     </div>
 
@@ -112,8 +115,8 @@
       <div id="orderArea" class="order-area"></div>
       <div class="step-nav">
         <button class="btn-secondary" onclick="goStep(1)">← 이전</button>
-        <button class="btn-accent" onclick="checkOrder()">정답 확인</button>
         <button class="btn-accent" onclick="goStep(3)">다음 →</button>
+        <button class="btn-accent" onclick="checkOrder()">정답 확인</button>
       </div>
     </div>
 
