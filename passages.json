@@ -455,5 +455,154 @@
     "hasTyping": true,
     "hasRecall": true,
     "createdAt": "2026-06-22T09:50:37.924Z"
+  },
+  {
+    "id": "1782125518446",
+    "title": "배재고 1학년 기말 지문",
+    "content": "",
+    "paragraphs": [
+      {
+        "sentences": [
+          "Lesson 3 How Our Body Works",
+          "Timing is Everything",
+          "Host: Welcome back to Today's Health.",
+          "Today we're going to be talking about exercise.",
+          "Dr. Victoria Hill is here, and she is going to share some useful tips.",
+          "So, Dr. Hill, let's start with a question about my experience last month.",
+          "I worked out right after dinner and got a stomachache.",
+          "Why did that happen?"
+        ],
+        "meanings": [
+          "레슨 3 우리 몸이 작동하는 방식",
+          "타이밍이 전부다",
+          "진행자: 투데이즈 헬스에 오신 것을 환영합니다.",
+          "오늘은 운동에 대해 이야기해 보려고 합니다.",
+          "빅토리아 힐 박사님이 이 자리에 나와 유용한 팁을 공유해 주실 예정입니다.",
+          "그러면 힐 박사님, 지난달 제 경험에 대한 질문으로 시작해 보겠습니다.",
+          "제가 저녁을 먹고 바로 운동을 했다가 배가 아팠는데요.",
+          "왜 그런 일이 일어났을까요?"
+        ]
+      },
+      {
+        "sentences": [
+          "Dr. Hill: Well, the problem is that you exercised too soon after eating.",
+          "This can cause various stomach issues.",
+          "When you eat, blood rushes to the digestive system to help break down the food and absorb its nutrients.",
+          "But when you start to exercise, blood moves from the digestive system to your muscles.",
+          "This happens in order to supply your muscles with the oxygen and nutrients they require.",
+          "As a result, the digestion process is paused until the blood returns.",
+          "So, whether you're lifting weights or going for a jog, you shouldn't do it with a stomach full of food."
+        ],
+        "meanings": [
+          "힐 박사: 음, 문제는 식사 후 너무 일찍 운동을 하셨다는 점입니다.",
+          "이것은 다양한 위장 문제를 일으킬 수 있습니다.",
+          "음식을 먹으면 음식을 분해하고 영양소를 흡수하는 것을 돕기 위해 혈액이 소화계로 몰려듭니다.",
+          "하지만 운동을 시작하면 혈액이 소화계에서 근육으로 이동합니다.",
+          "이는 근육이 필요로 하는 산소와 영양소를 공급하기 위해 일어나는 현상입니다.",
+          "그 결과, 혈액이 다시 돌아올 때까지 소화 과정이 일시 중단됩니다.",
+          "따라서 웨이트 트레이닝을 하든 조깅을 하든, 배에 음식을 가득 채운 채로 해서는 안 됩니다."
+        ]
+      },
+      {
+        "sentences": [
+          "Host: I see. That makes sense.",
+          "So, does that mean I should exercise on an empty stomach?",
+          "Dr. Hill: No, it doesn't.",
+          "That can also be harmful and unpleasant.",
+          "This is because the body needs energy to exercise.",
+          "The fuel that provides this energy is glycogen.",
+          "Carbohydrates in the food we eat are broken down into a kind of sugar called glucose.",
+          "When this glucose is stored in parts of the body, such as the muscles and the liver, it is called glycogen.",
+          "This is why exercising on a completely empty stomach-such as when you first wake up in the morning-can be such a challenge.",
+          "Your blood sugar levels are low, and you don't have enough glycogen stored in your body.",
+          "If you exercise on an empty stomach, you will most likely lack energy and feel unusually tired.",
+          "There can also be more serious outcomes.",
+          "Some people end up suffering from nausea and headaches, and others even faint.",
+          "This is because intense exercise uses up all the glycogen in your muscles."
+        ],
+        "meanings": [
+          "진행자: 그렇군요. 이해가 됩니다.",
+          "그렇다면 공복 상태에서 운동을 해야 한다는 뜻인가요?",
+          "힐 박사: 아니요, 그렇지 않습니다.",
+          "그것 또한 해롭고 불쾌한 경험이 될 수 있습니다.",
+          "왜냐하면 몸이 운동을 하려면 에너지가 필요하기 때문입니다.",
+          "이 에너지를 제공하는 연료가 바로 글리코겐입니다.",
+          "우리가 먹는 음식 속 탄수화물은 포도당이라고 불리는 일종의 당으로 분해됩니다.",
+          "이 포도당이 근육이나 간 같은 신체 부위에 저장될 때, 이를 글리코겐이라고 부릅니다.",
+          "아침에 처음 일어났을 때처럼 완전히 빈속으로 운동하는 것이 큰 난관이 될 수 있는 이유가 바로 이 때문입니다.",
+          "혈당 수치가 낮고, 몸에 저장된 글리코겐이 충분하지 않으니까요.",
+          "만약 빈속에 운동을 하면 높은 확률로 에너지가 부족해지고 유난히 피곤함을 느끼게 될 것입니다.",
+          "더 심각한 결과가 발생할 수도 있습니다.",
+          "어떤 사람들은 결국 메스꺼움과 두통을 겪게 되고, 심지어 기절하는 사람도 있습니다.",
+          "이는 격렬한 운동이 근육 속의 모든 글리코겐을 소모해 버리기 때문입니다."
+        ]
+      },
+      {
+        "sentences": [
+          "Host: So, is it the loss of glycogen that causes us to have low levels of energy?",
+          "Dr. Hill: That's correct.",
+          "For this reason, doctors recommend that people eat food containing carbohydrates within thirty minutes after working out.",
+          "This replaces the muscle glycogen you have lost.",
+          "Basically, you need between one and one and a half grams of carbohydrates for every kilogram you weigh.",
+          "Let's do the math.",
+          "If you weigh 60 kilograms, you should try to consume between 60 and 90 grams of carbohydrates after you exercise.",
+          "This is equal to about one bowl of white rice or three bananas."
+        ],
+        "meanings": [
+          "진행자: 그렇다면 우리가 낮은 에너지 수치를 갖게 되는 원인이 바로 글리코겐의 손실인가요?",
+          "힐 박사: 맞습니다.",
+          "이러한 이유로 의사들은 운동을 마친 후 30분 이내에 탄수화물이 포함된 음식을 섭취할 것을 권장합니다.",
+          "이것이 여러분이 잃어버린 근육 글리코겐을 보충해 줍니다.",
+          "기본적으로 체중 1킬로그램당 1에서 1.5그램 사이의 탄수화물이 필요합니다.",
+          "계산을 한번 해봅시다.",
+          "만약 몸무게가 60킬로그램이라면, 운동 후에 60에서 90그램 사이의 탄수화물을 섭취하도록 노력해야 합니다.",
+          "이것은 흰쌀밥 한 공기 또는 바나나 3개 정도에 해당하는 양입니다."
+        ]
+      },
+      {
+        "sentences": [
+          "Host: That's very interesting.",
+          "But what about eating before we exercise?",
+          "Can you explain how long we should wait after eating?",
+          "Dr. Hill: Well, as I said before, exercising right after you eat will cause feelings of discomfort.",
+          "But, if you wait too long to exercise after eating, you'll suffer from a lack of energy.",
+          "The best time to eat before you exercise varies from one to three hours.",
+          "Basically, it depends on several factors such as the type and amount of food as well as body size, age, and gender.",
+          "The type of exercise also matters.",
+          "For extremely active exercise like cycling, I suggest that you wait between one and a half and three hours after eating a moderate-sized meal.",
+          "But for something more casual, such as golfing, waiting for one hour after a meal should be enough.",
+          "Clearly, you can wait less after eating a snack."
+        ],
+        "meanings": [
+          "진행자: 매우 흥미롭네요.",
+          "하지만 운동하기 전에 먹는 것은 어떤가요?",
+          "식사 후 얼마나 기다렸다가 해야 하는지 설명해 주실 수 있나요?",
+          "힐 박사: 음, 앞서 말씀드렸듯이 식사 후 바로 운동하는 것은 불쾌감을 유발할 것입니다.",
+          "하지만 식사 후 운동하기까지 너무 오래 기다리면 에너지 부족으로 고생하게 될 것입니다.",
+          "운동하기 전 음식을 먹기에 가장 좋은 시간은 1시간에서 3시간 사이로 다양합니다.",
+          "기본적으로 음식의 종류와 양뿐만 아니라 체격, 연령, 성별 등 여러 요인에 따라 달라집니다.",
+          "운동의 종류도 중요합니다.",
+          "자전거 타기처럼 매우 활발한 운동의 경우, 적당한 양의 식사를 한 후 1시간 반에서 3시간 사이에 기다릴 것을 제안합니다.",
+          "하지만 골프처럼 더 가벼운 운동이라면 식후 1시간만 기다려도 충분할 것입니다.",
+          "분명히 간식을 먹은 후에는 더 적게 기다려도 됩니다."
+        ]
+      },
+      {
+        "sentences": [
+          "Host: Thank you very much for this fascinating information, Dr. Hill.",
+          "I'm sure it will be very helpful for all of our viewers."
+        ],
+        "meanings": [
+          "진행자: 이 흥미로운 정보를 공유해 주셔서 정말 감사합니다, 힐 박사님.",
+          "우리 모든 시청자분들께 매우 도움이 될 것이라 확신합니다."
+        ]
+      }
+    ],
+    "author": "dlgkwns",
+    "tags": [],
+    "hasMeaning": true,
+    "hasTyping": true,
+    "hasRecall": true,
+    "createdAt": "2026-06-22T10:51:58.446Z"
   }
 ]
